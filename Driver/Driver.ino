@@ -115,8 +115,27 @@ void exeCommand(char mode, int percent) {
 		steer.writeMicroseconds(calc_duty(percent));
 	}
 }
+/*
+void exeHeartbeat () {
+unsigned long previousMillis = 0; // last time update
+long interval = 2000; // interval at which to do something (milliseconds)
+
+void setup(){
+}
+
+void loop(){
+  unsigned long currentMillis = millis();
+
+  if(currentMillis - previousMillis > interval) {
+     previousMillis = currentMillis;  
+
+     // do something
+  }
+}
 
 
+}
+*/
 int calc_duty (int percent_cycle)
 {
 	float pulse = 0;

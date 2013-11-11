@@ -16,8 +16,6 @@
  *
  */
 
-
-
 #include <Servo.h> 
 
 #define FREQ 50
@@ -25,13 +23,20 @@
 #define MAX_PULSE 2000
 #define PWM_RANGE (MAX_PULSE - MIN_PULSE)
 
+#define MOTOR_STOP_POS 0
+
+//Servos
 Servo motor;
 Servo steer;
-bool invalid = false;
-char mode;
+//Time setting for heartbeat to see if host is alive
+unsigned long previousMillis = 0; // last time update
+unsigned long interval = 1000; // interval of heartbeat (milliseconds)
+//String vars for manipulation
 String dataIn = "";
-
+bool invalid = false;
+bool heartbeat = true;
 char intBuffer[12];
+char mode;
 
 void setup() 
 { 
@@ -43,7 +48,9 @@ void setup()
 } 
 
 void loop() {
-
+	
+	checkHeartbeat();
+	
 	while ( Serial.available()) {
 		char ch = Serial.read();
 
@@ -64,7 +71,7 @@ void loop() {
 			if (mode == 'H') 
 			{
 				Serial.println("HeartBeat");
-				//exeHeartbeat
+				exeHeartbeat();
 				dataIn = "";
 			}
 			else 
@@ -77,7 +84,7 @@ void loop() {
 					invalid = true;
 				}
 
-				if (!invalid) 
+				if (!invalid && heartbeat) 
 				{
 					Serial.print("Percent print: ");
 					Serial.println(percent);
@@ -115,27 +122,25 @@ void exeCommand(char mode, int percent) {
 		steer.writeMicroseconds(calc_duty(percent));
 	}
 }
-/*
+
 void exeHeartbeat () {
-unsigned long previousMillis = 0; // last time update
-long interval = 2000; // interval at which to do something (milliseconds)
-
-void setup(){
+	unsigned long currentMillis = millis();
+	previousMillis = currentMillis;
+	heartbeat = true;
 }
 
-void loop(){
-  unsigned long currentMillis = millis();
-
-  if(currentMillis - previousMillis > interval) {
-     previousMillis = currentMillis;  
-
-     // do something
-  }
+void checkHeartbeat () {
+	unsigned long currentMillis = millis();
+	if (currentMillis - previousMillis > interval){
+		motor.writeMicroseconds(calc_duty(MOTOR_STOP_POS));
+		heartbeat = false;
+	}
+	else
+	{
+		heartbeat = true;
+	}
 }
 
-
-}
-*/
 int calc_duty (int percent_cycle)
 {
 	float pulse = 0;
